@@ -1,0 +1,5 @@
+.idea/
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+**/target/
