@@ -19,7 +19,7 @@
     <description>Multi-service e-commerce order pipeline with Apache Kafka and XML/XSLT</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <jaxb.impl.version>4.0.5</jaxb.impl.version>
     </properties>
 

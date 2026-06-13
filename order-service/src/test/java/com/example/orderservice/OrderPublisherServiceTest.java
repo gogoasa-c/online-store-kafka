@@ -30,7 +30,7 @@ class OrderPublisherServiceTest {
     @Test
     void publishOrder_sendsXmlToOrderPlacedTopic() throws Exception {
         when(kafkaTemplate.send(any(String.class), any(String.class), any(String.class)))
-                .thenReturn(null);
+                .thenReturn(java.util.concurrent.CompletableFuture.completedFuture(null));
 
         service = new OrderPublisherService(kafkaTemplate);
 
@@ -38,8 +38,7 @@ class OrderPublisherServiceTest {
                 "C-001",
                 "test@example.com",
                 List.of(new ItemDto("SKU-A", 2, 19.99)),
-                new ShippingAddressDto("123 Main St", "Bucharest", "010101"),
-                "APPROVED"
+                new ShippingAddressDto("123 Main St", "Bucharest", "010101")
         );
 
         String orderId = service.publishOrder(dto);
@@ -60,6 +59,6 @@ class OrderPublisherServiceTest {
         assertThat(xml).contains("<orderId>" + orderId + "</orderId>");
         assertThat(xml).contains("<customerEmail>test@example.com</customerEmail>");
         assertThat(xml).contains("<sku>SKU-A</sku>");
-        assertThat(xml).contains("<paymentStatus>APPROVED</paymentStatus>");
+        assertThat(xml).contains("<paymentStatus>PENDING</paymentStatus>");
     }
 }

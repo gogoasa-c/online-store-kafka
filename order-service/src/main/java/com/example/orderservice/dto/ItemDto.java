@@ -1,7 +1,11 @@
 package com.example.orderservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public record ItemDto(
-        String sku,
-        int qty,
-        double price
+        @NotBlank String sku,
+        @Positive int qty,
+        @PositiveOrZero double price
 ) {}

@@ -4,11 +4,10 @@
 
     <!--
         Transforms a <fulfillmentEvent> into a <notificationPayload> ready for email dispatch.
-        recipientEmail  ← customerEmail
-        subject         ← constructed from orderId
-        orderSummary    ← constructed from orderId, warehouseId, dispatchTimestamp, estimatedDelivery
-        trackingUrl     ← https://track.example.com/<trackingCode>
+        trackingUrlBase is injected from application configuration so the URL is not hard-coded here.
     -->
+    <xsl:param name="trackingUrlBase"/>
+
     <xsl:template match="/">
         <notificationPayload>
             <recipientEmail>
@@ -25,7 +24,7 @@
                     '. Estimated delivery: ', /fulfillmentEvent/estimatedDelivery, '.')"/>
             </orderSummary>
             <trackingUrl>
-                <xsl:value-of select="concat('https://track.example.com/', /fulfillmentEvent/trackingCode)"/>
+                <xsl:value-of select="concat($trackingUrlBase, /fulfillmentEvent/trackingCode)"/>
             </trackingUrl>
         </notificationPayload>
     </xsl:template>

@@ -1,7 +1,9 @@
 package com.example.orderservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record ShippingAddressDto(
-        String street,
-        String city,
-        String zip
+        @NotBlank String street,
+        @NotBlank String city,
+        @NotBlank String zip
 ) {}

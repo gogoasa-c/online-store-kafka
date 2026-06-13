@@ -34,28 +34,35 @@ public class OrderPublisherService {
     public String publishOrder(CreateOrderDto dto) throws JAXBException {
         String orderId = UUID.randomUUID().toString();
 
-        OrderRequest order = new OrderRequest();
-        order.setOrderId(orderId);
-        order.setCustomerId(dto.customerId());
-        order.setCustomerEmail(dto.customerEmail());
-        order.setPaymentStatus(dto.paymentStatus());
-        order.setTimestamp(Instant.now().toString());
-
+        List<Item> items = dto.items().stream()
+                .map(i -> new Item(i.sku(), i.qty(), i.price()))
+                .toList();
         ShippingAddress address = new ShippingAddress(
                 dto.shippingAddress().street(),
                 dto.shippingAddress().city(),
                 dto.shippingAddress().zip()
         );
-        order.setShippingAddress(address);
-
-        List<Item> items = dto.items().stream()
-                .map(i -> new Item(i.sku(), i.qty(), i.price()))
-                .toList();
-        order.setItems(items);
+        OrderRequest order = new OrderRequest(
+                orderId,
+                dto.customerId(),
+                dto.customerEmail(),
+                items,
+                address,
+                "PENDING",
+                Instant.now()
+        );
 
         String xml = marshal(order);
         log.info("Publishing OrderRequest to topic '{}': orderId={}", TOPIC, orderId);
-        kafkaTemplate.send(TOPIC, orderId, xml);
+        kafkaTemplate.send(TOPIC, orderId, xml)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish order {} to topic '{}'", orderId, TOPIC, ex);
+                    } else {
+                        log.debug("Published order {} to partition {}", orderId,
+                                result.getRecordMetadata().partition());
+                    }
+                });
 
         return orderId;
     }

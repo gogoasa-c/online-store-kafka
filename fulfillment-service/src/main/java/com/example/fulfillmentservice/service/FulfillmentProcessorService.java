@@ -7,6 +7,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.StringWriter;
@@ -17,11 +18,17 @@ import java.time.LocalDate;
 public class FulfillmentProcessorService {
 
     private static final Logger log = LoggerFactory.getLogger(FulfillmentProcessorService.class);
-    private static final String WAREHOUSE_ID = "WH-BUC-01";
 
+    private final String warehouseId;
+    private final int estimatedDeliveryDays;
     private final JAXBContext jaxbContext;
 
-    public FulfillmentProcessorService() throws JAXBException {
+    public FulfillmentProcessorService(
+            @Value("${fulfillment.warehouse-id}") String warehouseId,
+            @Value("${fulfillment.estimated-delivery-days}") int estimatedDeliveryDays)
+            throws JAXBException {
+        this.warehouseId = warehouseId;
+        this.estimatedDeliveryDays = estimatedDeliveryDays;
         this.jaxbContext = JAXBContext.newInstance(FulfillmentEvent.class);
     }
 
@@ -29,13 +36,14 @@ public class FulfillmentProcessorService {
         log.info("Processing order {}... simulating warehouse packing", order.getOrderId());
         Thread.sleep(1000);
 
-        FulfillmentEvent event = new FulfillmentEvent();
-        event.setOrderId(order.getOrderId());
-        event.setCustomerEmail(order.getCustomerEmail());
-        event.setWarehouseId(WAREHOUSE_ID);
-        event.setDispatchTimestamp(Instant.now().toString());
-        event.setTrackingCode("TRK-" + order.getOrderId().substring(0, 8).toUpperCase());
-        event.setEstimatedDelivery(LocalDate.now().plusDays(3).toString());
+        FulfillmentEvent event = new FulfillmentEvent(
+                order.getOrderId(),
+                order.getCustomerEmail(),
+                warehouseId,
+                Instant.now(),
+                "TRK-" + order.getOrderId().substring(0, 8).toUpperCase(),
+                LocalDate.now().plusDays(estimatedDeliveryDays)
+        );
 
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

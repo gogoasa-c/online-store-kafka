@@ -1,11 +1,14 @@
 package com.example.fulfillmentservice.model;
 
+import com.example.fulfillmentservice.model.adapter.InstantAdapter;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +26,9 @@ public class OrderRequest {
 
     private ShippingAddress shippingAddress;
     private String paymentStatus;
-    private String timestamp;
+
+    @XmlJavaTypeAdapter(InstantAdapter.class)
+    private Instant timestamp;
 
     public OrderRequest() {}
 
@@ -45,6 +50,6 @@ public class OrderRequest {
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
-    public String getTimestamp() { return timestamp; }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    public Instant getTimestamp() { return timestamp; }
+    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
 }

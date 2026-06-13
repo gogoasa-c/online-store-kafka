@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,7 +74,7 @@ class OrderRequestMarshallingTest {
         order.setCustomerId("C-001");
         order.setCustomerEmail("test@example.com");
         order.setPaymentStatus("APPROVED");
-        order.setTimestamp("2026-06-13T10:00:00Z");
+        order.setTimestamp(Instant.parse("2026-06-13T10:00:00Z"));
         order.setItems(List.of(new Item("SKU-A", 2, 19.99)));
         order.setShippingAddress(new ShippingAddress("123 Main St", "Bucharest", "010101"));
         return order;

@@ -17,6 +17,10 @@ spring:
       acks: all
       retries: 3
 
+fulfillment:
+  warehouse-id: WH-BUC-01
+  estimated-delivery-days: 3
+
 logging:
   level:
     com.example.fulfillmentservice: DEBUG

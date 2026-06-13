@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.Instant;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,8 +56,8 @@ class FulfillmentEventMarshallingTest {
         assertThat(restored.getCustomerEmail()).isEqualTo("test@example.com");
         assertThat(restored.getWarehouseId()).isEqualTo("WH-BUC-01");
         assertThat(restored.getTrackingCode()).isEqualTo("TRK-ORDER-0");
-        assertThat(restored.getDispatchTimestamp()).isEqualTo("2026-06-13T10:01:30Z");
-        assertThat(restored.getEstimatedDelivery()).isEqualTo("2026-06-16");
+        assertThat(restored.getDispatchTimestamp()).isEqualTo(Instant.parse("2026-06-13T10:01:30Z"));
+        assertThat(restored.getEstimatedDelivery()).isEqualTo(LocalDate.parse("2026-06-16"));
     }
 
     private FulfillmentEvent buildSampleEvent() {
@@ -63,9 +65,9 @@ class FulfillmentEventMarshallingTest {
         event.setOrderId("ORDER-001");
         event.setCustomerEmail("test@example.com");
         event.setWarehouseId("WH-BUC-01");
-        event.setDispatchTimestamp("2026-06-13T10:01:30Z");
+        event.setDispatchTimestamp(Instant.parse("2026-06-13T10:01:30Z"));
         event.setTrackingCode("TRK-ORDER-0");
-        event.setEstimatedDelivery("2026-06-16");
+        event.setEstimatedDelivery(LocalDate.parse("2026-06-16"));
         return event;
     }
 }

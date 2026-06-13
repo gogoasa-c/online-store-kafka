@@ -1,11 +1,14 @@
 package com.example.orderservice.model;
 
+import com.example.orderservice.model.adapter.InstantAdapter;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +26,23 @@ public class OrderRequest {
 
     private ShippingAddress shippingAddress;
     private String paymentStatus;
-    private String timestamp;
+
+    @XmlJavaTypeAdapter(InstantAdapter.class)
+    private Instant timestamp;
 
     public OrderRequest() {}
+
+    public OrderRequest(String orderId, String customerId, String customerEmail,
+                        List<Item> items, ShippingAddress shippingAddress,
+                        String paymentStatus, Instant timestamp) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.customerEmail = customerEmail;
+        this.items = items;
+        this.shippingAddress = shippingAddress;
+        this.paymentStatus = paymentStatus;
+        this.timestamp = timestamp;
+    }
 
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
@@ -45,6 +62,6 @@ public class OrderRequest {
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
-    public String getTimestamp() { return timestamp; }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    public Instant getTimestamp() { return timestamp; }
+    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
 }
