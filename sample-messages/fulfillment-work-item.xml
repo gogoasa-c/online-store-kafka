@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample FulfillmentWorkItem XML — internal to fulfillment-service
+  Produced by: order-to-fulfillment.xsl (XSLT transformation of OrderRequest)
+  Contains only the fields the warehouse needs; confidential fields are dropped.
+-->
+<fulfillmentWorkItem>
+    <orderId>550e8400-e29b-41d4-a716-446655440000</orderId>
+    <items>
+        <item>
+            <sku>SKU-LAPTOP</sku>
+            <qty>1</qty>
+            <price>999.99</price>
+        </item>
+        <item>
+            <sku>SKU-MOUSE</sku>
+            <qty>2</qty>
+            <price>29.99</price>
+        </item>
+    </items>
+    <shippingAddress>
+        <street>123 Main Street</street>
+        <city>Bucharest</city>
+        <zip>010101</zip>
+    </shippingAddress>
+</fulfillmentWorkItem>

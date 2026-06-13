@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>online-store-kafka</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>online-store-kafka</name>
+    <description>Multi-service e-commerce order pipeline with Apache Kafka and XML/XSLT</description>
+
+    <properties>
+        <java.version>25</java.version>
+        <jaxb.impl.version>4.0.5</jaxb.impl.version>
+    </properties>
+
+    <modules>
+        <module>order-service</module>
+        <module>fulfillment-service</module>
+        <module>notification-service</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${jaxb.impl.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

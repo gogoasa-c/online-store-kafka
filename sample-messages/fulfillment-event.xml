@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample FulfillmentEvent XML — published to Kafka topic: order.fulfilled
+  Produced by: fulfillment-service (after mock warehouse processing)
+  Consumed by: notification-service
+-->
+<fulfillmentEvent>
+    <orderId>550e8400-e29b-41d4-a716-446655440000</orderId>
+    <customerEmail>diana@example.com</customerEmail>
+    <warehouseId>WH-BUC-01</warehouseId>
+    <dispatchTimestamp>2026-06-13T10:01:30Z</dispatchTimestamp>
+    <trackingCode>TRK-550E8400</trackingCode>
+    <estimatedDelivery>2026-06-16</estimatedDelivery>
+</fulfillmentEvent>

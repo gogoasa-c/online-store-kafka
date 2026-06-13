@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample NotificationPayload XML — logged by notification-service (mock email dispatch)
+  Produced by: fulfillment-to-notification.xsl (XSLT transformation of FulfillmentEvent)
+  This document is NOT published to Kafka; it is the final output of the pipeline.
+-->
+<notificationPayload>
+    <recipientEmail>diana@example.com</recipientEmail>
+    <subject>Your order 550e8400-e29b-41d4-a716-446655440000 has shipped!</subject>
+    <orderSummary>Order 550e8400-e29b-41d4-a716-446655440000 dispatched from WH-BUC-01 on 2026-06-13T10:01:30Z. Estimated delivery: 2026-06-16.</orderSummary>
+    <trackingUrl>https://track.example.com/TRK-550E8400</trackingUrl>
+</notificationPayload>

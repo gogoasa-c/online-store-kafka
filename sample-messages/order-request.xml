@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample OrderRequest XML — published to Kafka topic: order.placed
+  Produced by: order-service
+  Consumed by: fulfillment-service
+-->
+<orderRequest>
+    <orderId>550e8400-e29b-41d4-a716-446655440000</orderId>
+    <customerId>C-001</customerId>
+    <customerEmail>diana@example.com</customerEmail>
+    <items>
+        <item>
+            <sku>SKU-LAPTOP</sku>
+            <qty>1</qty>
+            <price>999.99</price>
+        </item>
+        <item>
+            <sku>SKU-MOUSE</sku>
+            <qty>2</qty>
+            <price>29.99</price>
+        </item>
+    </items>
+    <shippingAddress>
+        <street>123 Main Street</street>
+        <city>Bucharest</city>
+        <zip>010101</zip>
+    </shippingAddress>
+    <paymentStatus>APPROVED</paymentStatus>
+    <timestamp>2026-06-13T10:00:00Z</timestamp>
+</orderRequest>
