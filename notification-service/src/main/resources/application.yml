@@ -12,6 +12,9 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
 
+notification:
+  tracking-url-base: https://track.example.com/
+
 logging:
   level:
-    com.example.notificationservice: DEBUG
+    ro.ase.csie.notificationservice: DEBUG

@@ -14,4 +14,4 @@ spring:
 
 logging:
   level:
-    com.example.orderservice: DEBUG
+    ro.ase.csie.orderservice: DEBUG

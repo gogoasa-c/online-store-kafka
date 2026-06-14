@@ -7,11 +7,11 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.5</version>
         <relativePath/>
     </parent>
 
-    <groupId>com.example</groupId>
+    <groupId>ro.ase.csie</groupId>
     <artifactId>online-store-kafka</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
@@ -19,14 +19,16 @@
     <description>Multi-service e-commerce order pipeline with Apache Kafka and XML/XSLT</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <jaxb.impl.version>4.0.5</jaxb.impl.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
     </properties>
 
     <modules>
         <module>order-service</module>
         <module>fulfillment-service</module>
         <module>notification-service</module>
+        <module>shared</module>
     </modules>
 
     <dependencyManagement>
@@ -36,6 +38,47 @@
                 <artifactId>jaxb-impl</artifactId>
                 <version>${jaxb.impl.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>0.10.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
