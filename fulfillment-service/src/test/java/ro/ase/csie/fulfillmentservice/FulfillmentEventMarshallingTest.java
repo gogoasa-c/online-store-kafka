@@ -1,6 +1,6 @@
 package ro.ase.csie.fulfillmentservice;
 
-import ro.ase.csie.fulfillmentservice.model.FulfillmentEvent;
+import ro.ase.csie.shared.models.FulfillmentEvent;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;

@@ -9,11 +9,13 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @XmlRootElement(name = "fulfillmentEvent")

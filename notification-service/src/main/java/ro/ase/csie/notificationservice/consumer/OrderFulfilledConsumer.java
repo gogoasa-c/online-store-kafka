@@ -1,5 +1,7 @@
 package ro.ase.csie.notificationservice.consumer;
 
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import ro.ase.csie.notificationservice.service.NotificationDispatchService;
 import ro.ase.csie.notificationservice.service.XsltTransformerService;
 import org.slf4j.Logger;
@@ -10,12 +12,15 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class OrderFulfilledConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(OrderFulfilledConsumer.class);
     private static final String NOTIFICATION_XSL = "xslt/fulfillment-to-notification.xsl";
+    private static final Pattern ORDER_ID_PATTERN = Pattern.compile("<orderId>([^<]+)</orderId>");
 
     private final XsltTransformerService xsltTransformerService;
     private final NotificationDispatchService dispatchService;
@@ -31,27 +36,25 @@ public class OrderFulfilledConsumer {
     }
 
     @KafkaListener(topics = "order.fulfilled")
-    public void onOrderFulfilled(String fulfillmentEventXml) {
-        try {
-            log.debug("Received FulfillmentEvent XML:\n{}", fulfillmentEventXml);
+    public void onOrderFulfilled(final String fulfillmentEventXml) {
+        log.debug("Received FulfillmentEvent XML:\n{}", fulfillmentEventXml);
 
-            // Extract orderId for correlated logging before full XSLT processing
-            var matcher = java.util.regex.Pattern.compile("<orderId>([^<]+)</orderId>")
-                    .matcher(fulfillmentEventXml);
-            if (matcher.find()) {
-                MDC.put("orderId", matcher.group(1));
-            }
+        // Option.of extracts orderId for correlated logging before full XSLT processing.
+        // Equivalent to Scala's Option[String] — None when the pattern is absent, Some when matched.
+        final Matcher matcher = ORDER_ID_PATTERN.matcher(fulfillmentEventXml);
+        Option.of(matcher.find() ? matcher.group(1) : null)
+                .peek(orderId -> MDC.put("orderId", orderId));
 
-            String notificationXml = xsltTransformerService.transform(
-                    fulfillmentEventXml, NOTIFICATION_XSL,
-                    Map.of("trackingUrlBase", trackingUrlBase));
-            dispatchService.dispatch(notificationXml);
-
-        } catch (RuntimeException e) {
-            log.error("Failed to process FulfillmentEvent and dispatch notification", e);
-            throw e;
-        } finally {
-            MDC.clear();
-        }
+        // Try pipeline: transform → dispatch → log failure → clear MDC → re-throw on failure.
+        // andThen carries the notification XML as a side-effectful dispatch step.
+        Try.of(() -> xsltTransformerService.transform(
+                        fulfillmentEventXml, NOTIFICATION_XSL,
+                        Map.of("trackingUrlBase", trackingUrlBase)))
+                .andThen(dispatchService::dispatch)
+                .onFailure(e -> log.error(
+                        "Failed to process FulfillmentEvent and dispatch notification", e))
+                .andFinally(MDC::clear)
+                .getOrElseThrow(e -> e instanceof RuntimeException re
+                        ? re : new RuntimeException(e));
     }
 }

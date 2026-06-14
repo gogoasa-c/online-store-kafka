@@ -1,7 +1,8 @@
 package ro.ase.csie.fulfillmentservice.service;
 
-import ro.ase.csie.fulfillmentservice.model.FulfillmentEvent;
-import ro.ase.csie.fulfillmentservice.model.OrderRequest;
+import io.vavr.control.Try;
+import ro.ase.csie.shared.models.FulfillmentEvent;
+import ro.ase.csie.shared.models.OrderRequest;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -32,11 +33,20 @@ public class FulfillmentProcessorService {
         this.jaxbContext = JAXBContext.newInstance(FulfillmentEvent.class);
     }
 
-    public String process(OrderRequest order) throws JAXBException, InterruptedException {
+    /**
+     * Simulates warehouse packing, builds an immutable FulfillmentEvent,
+     * and marshals it to XML. Pure construction + marshalling — no mutable state.
+     *
+     * @param order the incoming order to fulfill
+     * @return serialized FulfillmentEvent XML
+     * @throws JAXBException        if JAXB marshalling fails
+     * @throws InterruptedException if the warehouse simulation sleep is interrupted
+     */
+    public String process(final OrderRequest order) throws JAXBException, InterruptedException {
         log.info("Processing order {}... simulating warehouse packing", order.getOrderId());
         Thread.sleep(1000);
 
-        FulfillmentEvent event = new FulfillmentEvent(
+        final FulfillmentEvent event = new FulfillmentEvent(
                 order.getOrderId(),
                 order.getCustomerEmail(),
                 warehouseId,
@@ -45,12 +55,20 @@ public class FulfillmentProcessorService {
                 LocalDate.now().plusDays(estimatedDeliveryDays)
         );
 
-        Marshaller marshaller = jaxbContext.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        StringWriter writer = new StringWriter();
-        marshaller.marshal(event, writer);
+        // Try.of wraps the checked JAXBException in a composable value (like Scala's Try[String])
+        final String xml = Try.of(() -> marshal(event))
+                .getOrElseThrow(e -> e instanceof JAXBException je
+                        ? je : new JAXBException(e.getMessage()));
 
         log.info("Dispatching FulfillmentEvent for order {}", order.getOrderId());
+        return xml;
+    }
+
+    private String marshal(final FulfillmentEvent event) throws JAXBException {
+        final Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        final StringWriter writer = new StringWriter();
+        marshaller.marshal(event, writer);
         return writer.toString();
     }
 }

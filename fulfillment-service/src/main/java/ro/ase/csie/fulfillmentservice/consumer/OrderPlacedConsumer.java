@@ -1,6 +1,8 @@
 package ro.ase.csie.fulfillmentservice.consumer;
 
-import ro.ase.csie.fulfillmentservice.model.OrderRequest;
+import io.vavr.Tuple;
+import io.vavr.control.Try;
+import ro.ase.csie.shared.models.OrderRequest;
 import ro.ase.csie.fulfillmentservice.service.FulfillmentProcessorService;
 import ro.ase.csie.fulfillmentservice.service.XsltTransformerService;
 import jakarta.xml.bind.JAXBContext;
@@ -38,36 +40,36 @@ public class OrderPlacedConsumer {
     }
 
     @KafkaListener(topics = "order.placed")
-    public void onOrderPlaced(String orderXml) {
-        try {
-            Unmarshaller unmarshaller = orderRequestContext.createUnmarshaller();
-            OrderRequest order = (OrderRequest) unmarshaller.unmarshal(new StringReader(orderXml));
-            MDC.put("orderId", order.getOrderId());
-
-            // XSLT produces a PII-stripped audit document for debug logging only; downstream
-            // processing uses the full OrderRequest so the warehouse audit log stays separate.
-            String workItemXml = xsltTransformerService.transform(orderXml, WORK_ITEM_XSL);
-            log.debug("FulfillmentWorkItem XML:\n{}", workItemXml);
-
-            String fulfillmentEventXml = processorService.process(order);
-
-            String oId = order.getOrderId();
-            kafkaTemplate.send(OUTPUT_TOPIC, oId, fulfillmentEventXml)
-                    .whenComplete((result, ex) -> {
-                        if (ex != null) {
-                            log.error("Failed to publish FulfillmentEvent for order {} to '{}'", oId, OUTPUT_TOPIC, ex);
-                        } else {
-                            log.info("Published FulfillmentEvent to '{}' for order {}", OUTPUT_TOPIC, oId);
-                        }
-                    });
-
-        } catch (JAXBException e) {
-            log.error("Failed to unmarshal OrderRequest XML", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("Fulfillment processing interrupted for message", e);
-        } finally {
-            MDC.clear();
-        }
+    public void onOrderPlaced(final String orderXml) {
+        // Pipeline: unmarshal → log XSLT debug output → process → publish
+        // Tuple.of carries (orderId, fulfillmentXml) across the pipeline boundary (Scala: (String, String))
+        Try.of(() -> {
+                    final Unmarshaller unmarshaller = orderRequestContext.createUnmarshaller();
+                    return (OrderRequest) unmarshaller.unmarshal(new StringReader(orderXml));
+                })
+                .peek(order -> MDC.put("orderId", order.getOrderId()))
+                .mapTry(order -> {
+                    final String workItemXml = xsltTransformerService.transform(orderXml, WORK_ITEM_XSL);
+                    log.debug("FulfillmentWorkItem XML:\n{}", workItemXml);
+                    // Tuple pairs orderId + fulfillmentXml so both are available for the Kafka send
+                    return Tuple.of(order.getOrderId(), processorService.process(order));
+                })
+                .peek(t -> kafkaTemplate.send(OUTPUT_TOPIC, t._1(), t._2())
+                        .whenComplete((result, ex) -> {
+                            if (ex != null) {
+                                log.error("Failed to publish FulfillmentEvent for order {} to '{}'",
+                                        t._1(), OUTPUT_TOPIC, ex);
+                            } else {
+                                log.info("Published FulfillmentEvent to '{}' for order {}",
+                                        OUTPUT_TOPIC, t._1());
+                            }
+                        }))
+                .onFailure(e -> {
+                    if (e instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    log.error("Fulfillment processing failed for incoming message", e);
+                })
+                .andFinally(MDC::clear);
     }
 }

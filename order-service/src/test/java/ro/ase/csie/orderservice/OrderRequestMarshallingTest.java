@@ -1,8 +1,8 @@
 package ro.ase.csie.orderservice;
 
-import ro.ase.csie.orderservice.model.Item;
-import ro.ase.csie.orderservice.model.OrderRequest;
-import ro.ase.csie.orderservice.model.ShippingAddress;
+import ro.ase.csie.shared.models.Item;
+import ro.ase.csie.shared.models.OrderRequest;
+import ro.ase.csie.shared.models.ShippingAddress;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;

@@ -1,8 +1,8 @@
 package ro.ase.csie.fulfillmentservice;
 
-import ro.ase.csie.fulfillmentservice.model.Item;
-import ro.ase.csie.fulfillmentservice.model.OrderRequest;
-import ro.ase.csie.fulfillmentservice.model.ShippingAddress;
+import ro.ase.csie.shared.models.Item;
+import ro.ase.csie.shared.models.OrderRequest;
+import ro.ase.csie.shared.models.ShippingAddress;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
