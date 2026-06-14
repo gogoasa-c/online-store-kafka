@@ -1,0 +1,22 @@
+###
+POST http://localhost:8081/orders
+Content-Type: application/json
+
+{
+  "customerId": "1234",
+  "customerEmail": "mail@gmail.com",
+  "items": [
+    {
+      "price": 123.45,
+      "qty": 35,
+      "sku": "SKU-1234"
+    }
+  ],
+  "shippingAddress": {
+    "city": "Bucharest",
+    "street": "Strada 1",
+    "zip": "12345"
+  }
+}
+
+<> 2026-06-14T205402.202.json

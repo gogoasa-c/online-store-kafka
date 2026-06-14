@@ -2,21 +2,19 @@ package ro.ase.csie.fulfillmentservice.consumer;
 
 import io.vavr.Tuple;
 import io.vavr.control.Try;
-import ro.ase.csie.shared.models.OrderRequest;
-import ro.ase.csie.fulfillmentservice.service.FulfillmentProcessorService;
-import ro.ase.csie.fulfillmentservice.service.XsltTransformerService;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import ro.ase.csie.fulfillmentservice.service.FulfillmentProcessorService;
+import ro.ase.csie.fulfillmentservice.service.XsltTransformerService;
+import ro.ase.csie.shared.models.OrderRequest;
 
 import java.io.StringReader;
-import java.util.Optional;
 
 @Component
 public class OrderPlacedConsumer {
@@ -47,11 +45,13 @@ public class OrderPlacedConsumer {
                 .peek(order -> MDC.put("orderId", order.getOrderId()))
                 .peek(order -> log.info("Fulfillment Work Item XML:\n{}", xsltTransformerService.transform(orderXml, WORK_ITEM_XSL)))
                 .mapTry(order -> Tuple.of(order.getOrderId(), processorService.process(order)))
-                .peek(tuple ->
-                        kafkaTemplate.send(OUTPUT_TOPIC, tuple._1, tuple._2)
-                                .whenComplete((result, exception) -> Optional.ofNullable(exception)
-                                        .ifPresentOrElse(e -> log.error("Failed to publish FulfillmentEvent for order {}: {}", tuple._1, e.getMessage()),
-                                                () -> log.info("Published FulfillmentEvent for order {} to topic {}", tuple._1, OUTPUT_TOPIC))))
+                .mapTry(tuple -> {
+                    final var sendResult = kafkaTemplate.send(OUTPUT_TOPIC, tuple._1, tuple._2).get();
+
+                    log.info("Published FulfillmentEvent for order {} to partition {}", tuple._1, sendResult.getRecordMetadata().partition());
+
+                    return tuple._1;
+                })
                 .onFailure(e -> {
                     if (e instanceof InterruptedException) {
                        Thread.currentThread().interrupt();

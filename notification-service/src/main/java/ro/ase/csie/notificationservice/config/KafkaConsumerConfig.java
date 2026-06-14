@@ -24,12 +24,14 @@ import java.util.Map;
 @EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
+    private final String bootstrapServers;
+    private final String groupId;
 
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    private String groupId;
+    public KafkaConsumerConfig(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
+                               @Value("${spring.kafka.consumer.group-id}") String groupId) {
+        this.bootstrapServers = bootstrapServers;
+        this.groupId = groupId;
+    }
 
     @Bean
     public ProducerFactory<String, String> dltProducerFactory() {

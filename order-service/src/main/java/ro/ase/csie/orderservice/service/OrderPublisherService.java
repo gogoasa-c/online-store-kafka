@@ -1,12 +1,6 @@
 package ro.ase.csie.orderservice.service;
 
-import io.vavr.collection.List;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
-import ro.ase.csie.orderservice.dto.CreateOrderDto;
-import ro.ase.csie.shared.models.Item;
-import ro.ase.csie.shared.models.OrderRequest;
-import ro.ase.csie.shared.models.ShippingAddress;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -14,9 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import ro.ase.csie.orderservice.dto.CreateOrderDto;
+import ro.ase.csie.shared.models.Item;
+import ro.ase.csie.shared.models.OrderRequest;
+import ro.ase.csie.shared.models.ShippingAddress;
 
 import java.io.StringWriter;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,9 +45,9 @@ public class OrderPublisherService {
         final String orderId = UUID.randomUUID().toString();
 
         // Vavr immutable List for the item-mapping pipeline (like Scala's List.map)
-        final java.util.List<Item> items = List.ofAll(dto.items())
+        final List<Item> items = dto.items().stream()
                 .map(i -> new Item(i.sku(), i.qty(), i.price()))
-                .toJavaList();
+                .toList();
 
         final ShippingAddress address = new ShippingAddress(
                 dto.shippingAddress().street(),
