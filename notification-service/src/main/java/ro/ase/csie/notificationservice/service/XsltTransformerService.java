@@ -22,11 +22,6 @@ public class XsltTransformerService {
     private final TransformerFactory factory = TransformerFactory.newInstance();
     private final ConcurrentHashMap<String, Templates> cache = new ConcurrentHashMap<>();
 
-    /** Delegates to the parameter-aware overload with an empty parameter map. */
-    public String transform(final String xmlInput, final String xslClasspathResource) {
-        return transform(xmlInput, xslClasspathResource, Map.of());
-    }
-
     /**
      * Transforms {@code xmlInput} using the compiled XSL stylesheet at the given classpath path.
      * XSLT parameters (e.g. {@code trackingUrlBase}) are injected as stylesheet parameters.

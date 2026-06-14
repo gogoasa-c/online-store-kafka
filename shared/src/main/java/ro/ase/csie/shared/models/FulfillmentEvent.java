@@ -33,4 +33,22 @@ public class FulfillmentEvent {
 
     @XmlJavaTypeAdapter(LocalDateAdapter.class)
     private LocalDate estimatedDelivery;
+
+    public static FulfillmentEvent of(final OrderRequest orderRequest,
+                                      final String warehouseId,
+                                      final int estimatedDeliveryDays) {
+
+        return new FulfillmentEvent(
+                orderRequest.getOrderId(),
+                orderRequest.getCustomerEmail(),
+                warehouseId,
+                Instant.now(),
+                toTrackingCode(orderRequest.getOrderId()),
+                LocalDate.now().plusDays(estimatedDeliveryDays)
+        );
+    }
+
+    private static String toTrackingCode(final String orderId) {
+        return "TRK-%s".formatted(orderId.substring(0, 8).toUpperCase());
+    }
 }

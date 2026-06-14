@@ -39,22 +39,14 @@ public class OrderFulfilledConsumer {
     public void onOrderFulfilled(final String fulfillmentEventXml) {
         log.debug("Received FulfillmentEvent XML:\n{}", fulfillmentEventXml);
 
-        // Option.of extracts orderId for correlated logging before full XSLT processing.
-        // Equivalent to Scala's Option[String] — None when the pattern is absent, Some when matched.
         final Matcher matcher = ORDER_ID_PATTERN.matcher(fulfillmentEventXml);
         Option.of(matcher.find() ? matcher.group(1) : null)
                 .peek(orderId -> MDC.put("orderId", orderId));
 
-        // Try pipeline: transform → dispatch → log failure → clear MDC → re-throw on failure.
-        // andThen carries the notification XML as a side-effectful dispatch step.
-        Try.of(() -> xsltTransformerService.transform(
-                        fulfillmentEventXml, NOTIFICATION_XSL,
-                        Map.of("trackingUrlBase", trackingUrlBase)))
+        Try.of(() -> xsltTransformerService.transform(fulfillmentEventXml, NOTIFICATION_XSL, Map.of("trackingUrlBase", trackingUrlBase)))
                 .andThen(dispatchService::dispatch)
-                .onFailure(e -> log.error(
-                        "Failed to process FulfillmentEvent and dispatch notification", e))
+                .onFailure(e -> log.error("Failed to process FulfillmentEvent and dispatch notification", e))
                 .andFinally(MDC::clear)
-                .getOrElseThrow(e -> e instanceof RuntimeException re
-                        ? re : new RuntimeException(e));
+                .getOrElseThrow(e -> e instanceof RuntimeException re ? re : new RuntimeException(e));
     }
 }

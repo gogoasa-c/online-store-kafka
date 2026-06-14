@@ -65,7 +65,6 @@ public class OrderPublisherService {
                 Instant.now()
         );
 
-        // Try.of wraps the checked JAXBException; re-throw on failure preserving the declared throws
         final String xml = Try.of(() -> marshal(order))
                 .getOrElseThrow(e -> e instanceof JAXBException je
                         ? je : new JAXBException(e.getMessage()));

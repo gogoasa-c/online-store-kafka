@@ -1,5 +1,6 @@
 package ro.ase.csie.orderservice.controller;
 
+import io.vavr.control.Try;
 import ro.ase.csie.orderservice.dto.CreateOrderDto;
 import ro.ase.csie.orderservice.dto.OrderAcceptedResponse;
 import ro.ase.csie.orderservice.service.OrderPublisherService;
@@ -24,15 +25,13 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<?> placeOrder(@Valid @RequestBody CreateOrderDto dto) {
-        try {
-            String orderId = publisherService.publishOrder(dto);
-            return ResponseEntity
-                    .status(HttpStatus.ACCEPTED)
-                    .body(new OrderAcceptedResponse(orderId, "ACCEPTED"));
-        } catch (JAXBException e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to serialize order: " + e.getMessage());
-        }
+        return Try.of(() -> publisherService.publishOrder(dto))
+                .<ResponseEntity<?>>mapTry(orderId -> ResponseEntity
+                        .status(HttpStatus.ACCEPTED)
+                        .body(new OrderAcceptedResponse(orderId, "ACCEPTED")))
+                .getOrElseGet(e -> ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to serialize order: " + e.getMessage()));
+
     }
 }

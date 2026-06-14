@@ -46,14 +46,7 @@ public class FulfillmentProcessorService {
         log.info("Processing order {}... simulating warehouse packing", order.getOrderId());
         Thread.sleep(1000);
 
-        final FulfillmentEvent event = new FulfillmentEvent(
-                order.getOrderId(),
-                order.getCustomerEmail(),
-                warehouseId,
-                Instant.now(),
-                "TRK-" + order.getOrderId().substring(0, 8).toUpperCase(),
-                LocalDate.now().plusDays(estimatedDeliveryDays)
-        );
+        final FulfillmentEvent event = FulfillmentEvent.of(order, warehouseId, estimatedDeliveryDays);
 
         // Try.of wraps the checked JAXBException in a composable value (like Scala's Try[String])
         final String xml = Try.of(() -> marshal(event))
@@ -61,6 +54,7 @@ public class FulfillmentProcessorService {
                         ? je : new JAXBException(e.getMessage()));
 
         log.info("Dispatching FulfillmentEvent for order {}", order.getOrderId());
+
         return xml;
     }
 

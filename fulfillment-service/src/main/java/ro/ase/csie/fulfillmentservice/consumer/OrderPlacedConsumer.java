@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.StringReader;
+import java.util.Optional;
 
 @Component
 public class OrderPlacedConsumer {
@@ -41,33 +42,21 @@ public class OrderPlacedConsumer {
 
     @KafkaListener(topics = "order.placed")
     public void onOrderPlaced(final String orderXml) {
-        // Pipeline: unmarshal → log XSLT debug output → process → publish
-        // Tuple.of carries (orderId, fulfillmentXml) across the pipeline boundary (Scala: (String, String))
-        Try.of(() -> {
-                    final Unmarshaller unmarshaller = orderRequestContext.createUnmarshaller();
-                    return (OrderRequest) unmarshaller.unmarshal(new StringReader(orderXml));
-                })
+        Try.of(orderRequestContext::createUnmarshaller)
+                .mapTry(unmarshaller -> (OrderRequest) unmarshaller.unmarshal(new StringReader(orderXml)))
                 .peek(order -> MDC.put("orderId", order.getOrderId()))
-                .mapTry(order -> {
-                    final String workItemXml = xsltTransformerService.transform(orderXml, WORK_ITEM_XSL);
-                    log.debug("FulfillmentWorkItem XML:\n{}", workItemXml);
-                    // Tuple pairs orderId + fulfillmentXml so both are available for the Kafka send
-                    return Tuple.of(order.getOrderId(), processorService.process(order));
-                })
-                .peek(t -> kafkaTemplate.send(OUTPUT_TOPIC, t._1(), t._2())
-                        .whenComplete((result, ex) -> {
-                            if (ex != null) {
-                                log.error("Failed to publish FulfillmentEvent for order {} to '{}'",
-                                        t._1(), OUTPUT_TOPIC, ex);
-                            } else {
-                                log.info("Published FulfillmentEvent to '{}' for order {}",
-                                        OUTPUT_TOPIC, t._1());
-                            }
-                        }))
+                .peek(order -> log.info("Fulfillment Work Item XML:\n{}", xsltTransformerService.transform(orderXml, WORK_ITEM_XSL)))
+                .mapTry(order -> Tuple.of(order.getOrderId(), processorService.process(order)))
+                .peek(tuple ->
+                        kafkaTemplate.send(OUTPUT_TOPIC, tuple._1, tuple._2)
+                                .whenComplete((result, exception) -> Optional.ofNullable(exception)
+                                        .ifPresentOrElse(e -> log.error("Failed to publish FulfillmentEvent for order {}: {}", tuple._1, e.getMessage()),
+                                                () -> log.info("Published FulfillmentEvent for order {} to topic {}", tuple._1, OUTPUT_TOPIC))))
                 .onFailure(e -> {
                     if (e instanceof InterruptedException) {
-                        Thread.currentThread().interrupt();
+                       Thread.currentThread().interrupt();
                     }
+
                     log.error("Fulfillment processing failed for incoming message", e);
                 })
                 .andFinally(MDC::clear);
