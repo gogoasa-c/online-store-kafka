@@ -1,0 +1,16 @@
+package ro.ase.csie.orderservice.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
+
+public record CreateOrderDto(
+        @NotBlank String customerId,
+        @Email @NotBlank String customerEmail,
+        @NotEmpty List<@Valid ItemDto> items,
+        @NotNull @Valid ShippingAddressDto shippingAddress
+) {}

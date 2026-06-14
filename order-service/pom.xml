@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.example</groupId>
+        <groupId>ro.ase.csie</groupId>
         <artifactId>online-store-kafka</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -15,6 +15,11 @@
     <description>REST API that accepts order JSON and publishes OrderRequest XML to Kafka</description>
 
     <dependencies>
+        <dependency>
+            <groupId>ro.ase.csie</groupId>
+            <artifactId>shared</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

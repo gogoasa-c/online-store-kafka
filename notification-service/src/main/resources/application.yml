@@ -17,4 +17,4 @@ notification:
 
 logging:
   level:
-    com.example.notificationservice: DEBUG
+    ro.ase.csie.notificationservice: DEBUG
